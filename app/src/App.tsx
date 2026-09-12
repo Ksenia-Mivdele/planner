@@ -25,7 +25,7 @@ function App() {
     <div className="app-shell">
       <header className="app-header">
         <NavLink className="brand" to="/week">
-          Планировщик
+          Привет, красавица! Сегодня тебя ждут великие дела
         </NavLink>
         <nav aria-label="Основная навигация">
           <NavLink to="/week">Неделя</NavLink>
