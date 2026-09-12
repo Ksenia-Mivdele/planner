@@ -3,6 +3,7 @@ import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { getSettings, saveSettings } from "./db/database";
 import { SetupPage } from "./features/setup/SetupPage";
 import { WeekPage } from "./features/week/WeekPage";
+import { EntriesPage } from "./features/entries/EntriesPage";
 import type { AppSettings } from "./types/planner";
 import "./App.css";
 
@@ -70,15 +71,7 @@ function App() {
         <Route
           path="/entries"
           element={
-            needsSetup ? (
-              <Navigate replace to="/setup" />
-            ) : (
-              <PlaceholderPage
-                eyebrow="Обзор"
-                title="Все записи"
-                description="Здесь появятся поиск, фильтры и список задач, событий и привычек."
-              />
-            )
+            needsSetup ? <Navigate replace to="/setup" /> : <EntriesPage />
           }
         />
         <Route
