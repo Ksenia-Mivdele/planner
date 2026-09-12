@@ -27,7 +27,12 @@ import "./WeekPage.css";
 
 type Props = { settings: AppSettings };
 const labels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-const slots = Array.from({ length: 96 }, (_, index) => index * 15);
+const CALENDAR_START = 8 * 60;
+const CALENDAR_DURATION = 15 * 60;
+const slots = Array.from(
+  { length: 60 },
+  (_, index) => CALENDAR_START + index * 15,
+);
 const formatFree = (minutes: number) =>
   `${Math.floor(minutes / 60)} ч ${String(minutes % 60).padStart(2, "0")} мин`;
 
@@ -42,12 +47,10 @@ const Zone = ({
     <div
       className={`calendar-zone ${kind}`}
       style={{
-        top: `${timeToMinutes(interval.start) / 14.4}%`,
-        height: `${(timeToMinutes(interval.end) - timeToMinutes(interval.start)) / 14.4}%`,
+        top: `${((timeToMinutes(interval.start) - CALENDAR_START) / CALENDAR_DURATION) * 100}%`,
+        height: `${((timeToMinutes(interval.end) - timeToMinutes(interval.start)) / CALENDAR_DURATION) * 100}%`,
       }}
-    >
-      <span>{kind === "work" ? "Работа" : "Личное"}</span>
-    </div>
+    />
   ) : null;
 
 export function WeekPage({ settings }: Props) {
@@ -197,11 +200,7 @@ export function WeekPage({ settings }: Props) {
                           minutesToTime(minute),
                         );
                     }}
-                  >
-                    {minute % 60 === 0 ? (
-                      <span>{minutesToTime(minute)}</span>
-                    ) : null}
-                  </div>
+                  />
                 ))}
                 {availability?.isDayOff ? (
                   <div className="day-off">Выходной</div>
@@ -228,8 +227,8 @@ export function WeekPage({ settings }: Props) {
                       draggable
                       role="button"
                       style={{
-                        top: `${timeToMinutes(entry.startTime) / 14.4}%`,
-                        height: `${Math.max(3, entry.durationMinutes / 14.4)}%`,
+                        top: `${((timeToMinutes(entry.startTime) - CALENDAR_START) / CALENDAR_DURATION) * 100}%`,
+                        height: `${Math.max(3, (entry.durationMinutes / CALENDAR_DURATION) * 100)}%`,
                       }}
                       tabIndex={0}
                       onClick={() => setSelectedEntry(entry)}

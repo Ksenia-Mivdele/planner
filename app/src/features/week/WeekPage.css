@@ -1,16 +1,28 @@
 .week-page {
-  margin: 2rem auto;
-  max-width: 1480px;
-  padding: 0 2rem 4rem;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem 5rem;
+  background:
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--mint) 22%, transparent),
+      transparent 28%
+    ),
+    var(--page);
 }
 .week-toolbar {
   align-items: flex-end;
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 2rem;
+  margin-bottom: 1.25rem;
 }
 .week-toolbar h1 {
-  margin: 0.25rem 0;
+  font-family: "Philosopher", Georgia, serif;
+  font-size: 2.35rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  margin: 0.2rem 0 0.5rem;
 }
 .week-toolbar p:not(.eyebrow) {
   color: var(--text-muted);
@@ -18,55 +30,69 @@
 }
 .week-actions {
   align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.week-actions button {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px var(--shadow);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem;
+}
+.week-actions button {
+  background: transparent;
+  border: 0;
+  border-radius: 11px;
   color: var(--text-strong);
   cursor: pointer;
-  padding: 0.55rem 0.75rem;
+  padding: 0.65rem 0.75rem;
+}
+.week-actions button:hover {
+  background: var(--surface-soft);
 }
 .week-actions label {
   color: var(--text-muted);
   font-size: 0.9rem;
 }
 .week-total {
+  background: var(--surface);
+  border-radius: 18px;
   color: var(--text-muted);
-  margin: 1.5rem 0;
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 8px 22px var(--shadow);
 }
 .week-total strong {
   color: var(--text-strong);
 }
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(130px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(7, minmax(142px, 1fr));
+  gap: 0.9rem;
   overflow-x: auto;
 }
 .day-column {
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  min-width: 130px;
+  border-radius: 22px;
+  min-width: 142px;
   overflow: hidden;
+  box-shadow: 0 10px 30px var(--shadow);
 }
 .day-column > header {
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  padding: 0.9rem;
+  padding: 1rem 1rem 0.8rem;
 }
 .day-column > header span {
   color: var(--text-muted);
   font-size: 0.85rem;
 }
 .day-column > header strong {
-  font-size: 1.25rem;
+  font-size: 1.6rem;
 }
 .day-column > header em {
   color: var(--accent);
@@ -79,32 +105,28 @@
   font-size: 0.75rem;
 }
 .time-scale {
-  height: 720px;
+  height: 450px;
   position: relative;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--peach) 12%, transparent) 0 66%,
+    color-mix(in srgb, var(--mint) 14%, transparent) 66% 100%
+  );
 }
 .time-slot {
-  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  border-top: 1px solid transparent;
   height: 7.5px;
   position: relative;
 }
-.time-slot span {
-  color: var(--text-muted);
-  font-size: 0.65rem;
-  left: 0.35rem;
-  position: absolute;
-  top: -0.45rem;
+.time-slot:nth-child(4n + 1) {
+  border-top-color: color-mix(in srgb, var(--border) 48%, transparent);
 }
 .calendar-zone {
-  border-radius: 8px;
-  left: 1.7rem;
-  opacity: 0.8;
+  border-radius: 10px;
+  left: 0.6rem;
+  opacity: 0.55;
   position: absolute;
-  right: 0.45rem;
-}
-.calendar-zone span {
-  display: block;
-  font-size: 0.7rem;
-  padding: 0.3rem;
+  right: 0.6rem;
 }
 .calendar-zone.work {
   background: color-mix(in srgb, var(--peach) 50%, transparent);
@@ -117,11 +139,12 @@
   border-radius: 7px;
   color: #3b2e32;
   cursor: pointer;
-  left: 1.7rem;
+  box-shadow: 0 6px 14px rgb(60 36 34 / 14%);
+  left: 0.6rem;
   overflow: hidden;
   padding: 0.3rem;
   position: absolute;
-  right: 0.45rem;
+  right: 0.6rem;
   text-align: left;
   z-index: 2;
 }

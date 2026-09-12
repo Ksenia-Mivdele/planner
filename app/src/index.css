@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&display=swap");
+
 :root {
   color-scheme: light dark;
   font-family:
@@ -49,6 +51,26 @@ body {
   margin: 0;
   background: var(--page);
   color: var(--text-strong);
+  isolation: isolate;
+}
+
+body::before {
+  background:
+    linear-gradient(rgb(255 250 247 / 84%), rgb(255 250 247 / 91%)),
+    url("https://static.tildacdn.com/tild6132-6336-4264-b264-663863353765/photo_2023-03-14_14-.jpg")
+      center / cover no-repeat;
+  content: "";
+  filter: blur(14px) saturate(0.75);
+  inset: -24px;
+  opacity: 0.42;
+  position: fixed;
+  z-index: -1;
+}
+:root[data-theme="dark"] body::before {
+  background:
+    linear-gradient(rgb(37 29 32 / 88%), rgb(37 29 32 / 94%)),
+    url("https://static.tildacdn.com/tild6132-6336-4264-b264-663863353765/photo_2023-03-14_14-.jpg")
+      center / cover no-repeat;
 }
 
 button,
