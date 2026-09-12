@@ -1,0 +1,80 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 2rem;
+}
+
+.brand {
+  color: var(--text-strong);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+nav a {
+  border-radius: 999px;
+  color: var(--text-muted);
+  padding: 0.55rem 0.8rem;
+  text-decoration: none;
+}
+
+nav a.active,
+nav a:hover {
+  background: var(--surface-soft);
+  color: var(--text-strong);
+}
+
+.placeholder-page {
+  max-width: 760px;
+  margin: 8rem auto;
+  padding: 3rem;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--surface);
+  box-shadow: 0 16px 48px var(--shadow);
+}
+
+.placeholder-page h1 {
+  margin: 0.25rem 0 1rem;
+  color: var(--text-strong);
+}
+
+.placeholder-page p:not(.eyebrow) {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .placeholder-page {
+    margin: 3rem 1rem;
+    padding: 2rem;
+  }
+}
