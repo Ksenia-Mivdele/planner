@@ -1,27 +1,38 @@
+import { useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { getSettings, saveSettings } from "./db/database";
+import { SetupPage } from "./features/setup/SetupPage";
+import type { AppSettings } from "./types/planner";
 import "./App.css";
 
-type PlaceholderPageProps = {
-  eyebrow: string;
-  title: string;
-  description: string;
-};
-
-function PlaceholderPage({
+const PlaceholderPage = ({
   eyebrow,
   title,
   description,
-}: PlaceholderPageProps) {
-  return (
-    <main className="placeholder-page">
-      <p className="eyebrow">{eyebrow}</p>
-      <h1>{title}</h1>
-      <p>{description}</p>
-    </main>
-  );
-}
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) => (
+  <main className="placeholder-page">
+    <p className="eyebrow">{eyebrow}</p>
+    <h1>{title}</h1>
+    <p>{description}</p>
+  </main>
+);
 
 function App() {
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+  useEffect(() => {
+    void getSettings().then(setSettings);
+  }, []);
+  if (!settings)
+    return <main className="loading-page">Загружаем Планировщик...</main>;
+  const needsSetup = !settings.hasCompletedInitialSetup;
+  const persistSettings = async (next: AppSettings) => {
+    await saveSettings(next);
+    setSettings(next);
+  };
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -38,31 +49,39 @@ function App() {
         <Route
           path="/setup"
           element={
-            <PlaceholderPage
-              eyebrow="Первый запуск"
-              title="Настроим вашу неделю"
-              description="Здесь появится настройка рабочего, личного и недоступного времени."
-            />
+            needsSetup ? (
+              <SetupPage settings={settings} onSave={persistSettings} />
+            ) : (
+              <Navigate replace to="/week" />
+            )
           }
         />
         <Route
           path="/week"
           element={
-            <PlaceholderPage
-              eyebrow="Календарь"
-              title="Моя неделя"
-              description="Здесь появится недельный календарь, записи и свободное время."
-            />
+            needsSetup ? (
+              <Navigate replace to="/setup" />
+            ) : (
+              <PlaceholderPage
+                eyebrow="Календарь"
+                title="Моя неделя"
+                description="Здесь появится недельный календарь, записи и свободное время."
+              />
+            )
           }
         />
         <Route
           path="/entries"
           element={
-            <PlaceholderPage
-              eyebrow="Обзор"
-              title="Все записи"
-              description="Здесь появятся поиск, фильтры и список задач, событий и привычек."
-            />
+            needsSetup ? (
+              <Navigate replace to="/setup" />
+            ) : (
+              <PlaceholderPage
+                eyebrow="Обзор"
+                title="Все записи"
+                description="Здесь появятся поиск, фильтры и список задач, событий и привычек."
+              />
+            )
           }
         />
         <Route
@@ -75,10 +94,12 @@ function App() {
             />
           }
         />
-        <Route path="*" element={<Navigate to="/setup" replace />} />
+        <Route
+          path="*"
+          element={<Navigate replace to={needsSetup ? "/setup" : "/week"} />}
+        />
       </Routes>
     </div>
   );
 }
-
 export default App;
