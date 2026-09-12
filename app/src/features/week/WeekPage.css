@@ -125,6 +125,23 @@
   text-align: left;
   z-index: 2;
 }
+.resize-controls {
+  bottom: 0.15rem;
+  display: flex;
+  gap: 0.15rem;
+  position: absolute;
+  right: 0.15rem;
+}
+.resize-controls button {
+  background: rgb(255 255 255 / 65%);
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 1.25rem;
+  line-height: 1;
+  padding: 0;
+  width: 1.25rem;
+}
 .entry-card.personal {
   background: var(--mint);
 }

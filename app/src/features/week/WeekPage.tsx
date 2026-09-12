@@ -57,6 +57,7 @@ export function WeekPage({ settings }: Props) {
   const [selectedEntry, setSelectedEntry] = useState<
     PlannerEntry | null | undefined
   >(undefined);
+  const [undoEntry, setUndoEntry] = useState<PlannerEntry | null>(null);
   useEffect(() => {
     void listEntries().then(setEntries);
   }, []);
@@ -70,6 +71,27 @@ export function WeekPage({ settings }: Props) {
   const removeEntry = async (id: string) => {
     await deleteEntry(id);
     setEntries((current) => current.filter((item) => item.id !== id));
+  };
+  const moveEntry = async (
+    entry: PlannerEntry,
+    date: string,
+    startTime: string,
+  ) => {
+    setUndoEntry(entry);
+    await persistEntry({
+      ...entry,
+      date,
+      startTime,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+  const resizeEntry = async (entry: PlannerEntry, delta: number) => {
+    setUndoEntry(entry);
+    await persistEntry({
+      ...entry,
+      durationMinutes: Math.max(15, entry.durationMinutes + delta),
+      updatedAt: new Date().toISOString(),
+    });
   };
   const dates = useMemo(
     () => getWeekDates(currentDate).map((date) => new Date(`${date}T12:00:00`)),
@@ -122,6 +144,17 @@ export function WeekPage({ settings }: Props) {
             />{" "}
             Показывать готовые
           </label>
+          {undoEntry && (
+            <button
+              type="button"
+              onClick={() => {
+                void persistEntry(undoEntry);
+                setUndoEntry(null);
+              }}
+            >
+              Отменить перенос
+            </button>
+          )}
         </div>
       </header>
       <p className="week-total">
@@ -148,7 +181,23 @@ export function WeekPage({ settings }: Props) {
                 aria-label={`Временная сетка ${labels[index]}`}
               >
                 {slots.map((minute) => (
-                  <div className="time-slot" key={minute}>
+                  <div
+                    className="time-slot"
+                    key={minute}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      const entry = entries.find(
+                        (item) =>
+                          item.id === event.dataTransfer.getData("text/plain"),
+                      );
+                      if (entry)
+                        void moveEntry(
+                          entry,
+                          format(date, "yyyy-MM-dd"),
+                          minutesToTime(minute),
+                        );
+                    }}
+                  >
                     {minute % 60 === 0 ? (
                       <span>{minutesToTime(minute)}</span>
                     ) : null}
@@ -172,18 +221,49 @@ export function WeekPage({ settings }: Props) {
                       (showCompleted || entry.status !== "done"),
                   )
                   .map((entry) => (
-                    <button
+                    <div
+                      aria-label={`${entry.title}, ${entry.durationMinutes} минут`}
                       className={`entry-card ${entry.category} ${entry.status === "done" ? "done" : ""}`}
                       key={entry.id}
+                      draggable
+                      role="button"
                       style={{
                         top: `${timeToMinutes(entry.startTime) / 14.4}%`,
                         height: `${Math.max(3, entry.durationMinutes / 14.4)}%`,
                       }}
-                      type="button"
+                      tabIndex={0}
                       onClick={() => setSelectedEntry(entry)}
+                      onDragStart={(event) =>
+                        event.dataTransfer.setData("text/plain", entry.id)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") setSelectedEntry(entry);
+                      }}
                     >
-                      {entry.title}
-                    </button>
+                      <span>{entry.title}</span>
+                      <span className="resize-controls">
+                        <button
+                          aria-label={`Уменьшить длительность: ${entry.title}`}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void resizeEntry(entry, -15);
+                          }}
+                        >
+                          −
+                        </button>
+                        <button
+                          aria-label={`Увеличить длительность: ${entry.title}`}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void resizeEntry(entry, 15);
+                          }}
+                        >
+                          +
+                        </button>
+                      </span>
+                    </div>
                   ))}
               </div>
             </article>
