@@ -1,0 +1,73 @@
+.dialog-backdrop {
+  align-items: center;
+  background: rgb(35 25 28 / 45%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 10;
+}
+.entry-dialog {
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px var(--shadow);
+  max-width: 560px;
+  padding: 1.5rem;
+  width: 100%;
+}
+.entry-dialog header,
+.entry-dialog footer {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+.entry-dialog header h2 {
+  margin: 0;
+}
+.entry-dialog header button {
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+}
+.entry-dialog > label {
+  display: grid;
+  gap: 0.35rem;
+  margin: 1rem 0;
+}
+.entry-dialog input,
+.entry-dialog select {
+  background: var(--page);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-strong);
+  padding: 0.55rem;
+}
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+.form-grid label {
+  display: grid;
+  gap: 0.35rem;
+}
+.entry-dialog footer {
+  margin-top: 1.5rem;
+}
+.entry-dialog footer span {
+  flex: 1;
+}
+.delete-button {
+  background: transparent;
+  border: 0;
+  color: #b42318;
+  cursor: pointer;
+}
+@media (max-width: 500px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -112,6 +112,29 @@
 .calendar-zone.personal {
   background: color-mix(in srgb, var(--mint) 50%, transparent);
 }
+.entry-card {
+  border: 0;
+  border-radius: 7px;
+  color: #3b2e32;
+  cursor: pointer;
+  left: 1.7rem;
+  overflow: hidden;
+  padding: 0.3rem;
+  position: absolute;
+  right: 0.45rem;
+  text-align: left;
+  z-index: 2;
+}
+.entry-card.personal {
+  background: var(--mint);
+}
+.entry-card.work {
+  background: var(--peach);
+}
+.entry-card.done {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
 .day-off {
   align-items: center;
   color: var(--text-muted);

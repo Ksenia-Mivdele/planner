@@ -7,7 +7,9 @@ import {
   subWeeks,
 } from "date-fns";
 import { ru } from "date-fns/locale";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { deleteEntry, listEntries, saveEntry } from "../../db/database";
+import { EntryDialog } from "../entries/EntryDialog";
 import {
   calculateFreeMinutes,
   getDayAvailability,
@@ -16,7 +18,11 @@ import {
   minutesToTime,
   timeToMinutes,
 } from "../../lib/schedule";
-import type { AppSettings, TimeInterval } from "../../types/planner";
+import type {
+  AppSettings,
+  PlannerEntry,
+  TimeInterval,
+} from "../../types/planner";
 import "./WeekPage.css";
 
 type Props = { settings: AppSettings };
@@ -47,6 +53,24 @@ const Zone = ({
 export function WeekPage({ settings }: Props) {
   const [currentDate, setCurrentDate] = useState(startOfToday());
   const [showCompleted, setShowCompleted] = useState(true);
+  const [entries, setEntries] = useState<PlannerEntry[]>([]);
+  const [selectedEntry, setSelectedEntry] = useState<
+    PlannerEntry | null | undefined
+  >(undefined);
+  useEffect(() => {
+    void listEntries().then(setEntries);
+  }, []);
+  const persistEntry = async (entry: PlannerEntry) => {
+    await saveEntry(entry);
+    setEntries((current) => [
+      ...current.filter((item) => item.id !== entry.id),
+      entry,
+    ]);
+  };
+  const removeEntry = async (id: string) => {
+    await deleteEntry(id);
+    setEntries((current) => current.filter((item) => item.id !== id));
+  };
   const dates = useMemo(
     () => getWeekDates(currentDate).map((date) => new Date(`${date}T12:00:00`)),
     [currentDate],
@@ -58,7 +82,7 @@ export function WeekPage({ settings }: Props) {
       calculateFreeMinutes({
         date,
         availability: settings.availability,
-        entries: [],
+        entries,
       }),
     0,
   );
@@ -109,7 +133,7 @@ export function WeekPage({ settings }: Props) {
           const free = calculateFreeMinutes({
             date,
             availability: settings.availability,
-            entries: [],
+            entries,
           });
           return (
             <article className="day-column" key={date.toISOString()}>
@@ -141,6 +165,26 @@ export function WeekPage({ settings }: Props) {
                     />
                   </>
                 )}
+                {entries
+                  .filter(
+                    (entry) =>
+                      entry.date === format(date, "yyyy-MM-dd") &&
+                      (showCompleted || entry.status !== "done"),
+                  )
+                  .map((entry) => (
+                    <button
+                      className={`entry-card ${entry.category} ${entry.status === "done" ? "done" : ""}`}
+                      key={entry.id}
+                      style={{
+                        top: `${timeToMinutes(entry.startTime) / 14.4}%`,
+                        height: `${Math.max(3, entry.durationMinutes / 14.4)}%`,
+                      }}
+                      type="button"
+                      onClick={() => setSelectedEntry(entry)}
+                    >
+                      {entry.title}
+                    </button>
+                  ))}
               </div>
             </article>
           );
@@ -150,9 +194,20 @@ export function WeekPage({ settings }: Props) {
         className="floating-add"
         type="button"
         aria-label="Добавить запись"
+        onClick={() => setSelectedEntry(null)}
       >
         +
       </button>
+      {selectedEntry !== undefined && (
+        <EntryDialog
+          entry={selectedEntry}
+          date={format(currentDate, "yyyy-MM-dd")}
+          defaultDuration={settings.defaultDurationMinutes}
+          onClose={() => setSelectedEntry(undefined)}
+          onSave={persistEntry}
+          onDelete={removeEntry}
+        />
+      )}
     </main>
   );
 }
