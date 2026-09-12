@@ -1,0 +1,144 @@
+.week-page {
+  margin: 2rem auto;
+  max-width: 1480px;
+  padding: 0 2rem 4rem;
+}
+.week-toolbar {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.week-toolbar h1 {
+  margin: 0.25rem 0;
+}
+.week-toolbar p:not(.eyebrow) {
+  color: var(--text-muted);
+  margin: 0;
+}
+.week-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.week-actions button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-strong);
+  cursor: pointer;
+  padding: 0.55rem 0.75rem;
+}
+.week-actions label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.week-total {
+  color: var(--text-muted);
+  margin: 1.5rem 0;
+}
+.week-total strong {
+  color: var(--text-strong);
+}
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(130px, 1fr));
+  gap: 0.75rem;
+  overflow-x: auto;
+}
+.day-column {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  min-width: 130px;
+  overflow: hidden;
+}
+.day-column > header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.9rem;
+}
+.day-column > header span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.day-column > header strong {
+  font-size: 1.25rem;
+}
+.day-column > header em {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-style: normal;
+}
+.day-column > header small {
+  color: var(--text-muted);
+  flex-basis: 100%;
+  font-size: 0.75rem;
+}
+.time-scale {
+  height: 720px;
+  position: relative;
+}
+.time-slot {
+  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  height: 7.5px;
+  position: relative;
+}
+.time-slot span {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  left: 0.35rem;
+  position: absolute;
+  top: -0.45rem;
+}
+.calendar-zone {
+  border-radius: 8px;
+  left: 1.7rem;
+  opacity: 0.8;
+  position: absolute;
+  right: 0.45rem;
+}
+.calendar-zone span {
+  display: block;
+  font-size: 0.7rem;
+  padding: 0.3rem;
+}
+.calendar-zone.work {
+  background: color-mix(in srgb, var(--peach) 50%, transparent);
+}
+.calendar-zone.personal {
+  background: color-mix(in srgb, var(--mint) 50%, transparent);
+}
+.day-off {
+  align-items: center;
+  color: var(--text-muted);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}
+.floating-add {
+  background: var(--accent);
+  border: 0;
+  border-radius: 50%;
+  bottom: 2rem;
+  box-shadow: 0 8px 24px var(--shadow);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.8rem;
+  height: 3.5rem;
+  position: fixed;
+  right: 2rem;
+  width: 3.5rem;
+}
+@media (max-width: 900px) {
+  .week-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .week-page {
+    padding: 0 1rem 3rem;
+  }
+}

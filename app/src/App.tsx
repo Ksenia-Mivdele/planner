@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { getSettings, saveSettings } from "./db/database";
 import { SetupPage } from "./features/setup/SetupPage";
+import { WeekPage } from "./features/week/WeekPage";
 import type { AppSettings } from "./types/planner";
 import "./App.css";
 
@@ -62,11 +63,7 @@ function App() {
             needsSetup ? (
               <Navigate replace to="/setup" />
             ) : (
-              <PlaceholderPage
-                eyebrow="Календарь"
-                title="Моя неделя"
-                description="Здесь появится недельный календарь, записи и свободное время."
-              />
+              <WeekPage settings={settings} />
             )
           }
         />
