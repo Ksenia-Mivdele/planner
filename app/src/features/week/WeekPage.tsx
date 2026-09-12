@@ -240,7 +240,13 @@ export function WeekPage({ settings }: Props) {
                         if (event.key === "Enter") setSelectedEntry(entry);
                       }}
                     >
-                      <span>{entry.title}</span>
+                      <span>
+                        {entry.date < format(startOfToday(), "yyyy-MM-dd") &&
+                        entry.status !== "done"
+                          ? "● "
+                          : ""}
+                        {entry.title}
+                      </span>
                       <span className="resize-controls">
                         <button
                           aria-label={`Уменьшить длительность: ${entry.title}`}
