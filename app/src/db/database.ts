@@ -135,3 +135,30 @@ export const deletePlannerDatabase = async (): Promise<void> => {
   databasePromise = undefined;
   await deleteDB(DATABASE_NAME);
 };
+
+export type PlannerExport = {
+  schemaVersion: 1;
+  settings: AppSettings;
+  entries: PlannerEntry[];
+  habits: HabitTemplate[];
+};
+export const exportPlannerData = async (): Promise<PlannerExport> => ({
+  schemaVersion: 1,
+  settings: await getSettings(),
+  entries: await listEntries(),
+  habits: await listHabits(),
+});
+export const importPlannerData = async (data: unknown): Promise<void> => {
+  const candidate = data as Partial<PlannerExport>;
+  if (
+    candidate.schemaVersion !== 1 ||
+    !candidate.settings ||
+    !Array.isArray(candidate.entries) ||
+    !Array.isArray(candidate.habits)
+  )
+    throw new Error("Файл не является резервной копией Планировщика.");
+  await clearAllData();
+  await saveSettings(candidate.settings);
+  await Promise.all(candidate.entries.map(saveEntry));
+  await Promise.all(candidate.habits.map(saveHabit));
+};

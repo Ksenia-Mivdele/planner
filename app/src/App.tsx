@@ -4,24 +4,10 @@ import { getSettings, saveSettings } from "./db/database";
 import { SetupPage } from "./features/setup/SetupPage";
 import { WeekPage } from "./features/week/WeekPage";
 import { EntriesPage } from "./features/entries/EntriesPage";
+import { SettingsPage } from "./features/settings/SettingsPage";
+import { createDefaultSettings } from "./types/planner";
 import type { AppSettings } from "./types/planner";
 import "./App.css";
-
-const PlaceholderPage = ({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) => (
-  <main className="placeholder-page">
-    <p className="eyebrow">{eyebrow}</p>
-    <h1>{title}</h1>
-    <p>{description}</p>
-  </main>
-);
 
 function App() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -77,10 +63,8 @@ function App() {
         <Route
           path="/settings"
           element={
-            <PlaceholderPage
-              eyebrow="Параметры"
-              title="Настройки"
-              description="Здесь появятся тема, экспорт, импорт и управление данными."
+            <SettingsPage
+              onReset={() => setSettings(createDefaultSettings())}
             />
           }
         />
