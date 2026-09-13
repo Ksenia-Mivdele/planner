@@ -238,32 +238,30 @@ export function WeekPage({ settings }: Props) {
                       (showCompleted || entry.status !== "done"),
                   )
                   .map((entry) => (
-                    <div
+                    <article
                       aria-label={`${entry.title}, ${entry.durationMinutes} минут`}
                       className={`entry-card ${entry.category} ${entry.status === "done" ? "done" : ""}`}
                       key={entry.id}
                       draggable
-                      role="button"
                       style={{
                         top: `${((timeToMinutes(entry.startTime) - CALENDAR_START) / CALENDAR_DURATION) * 100}%`,
                         height: `${Math.max(3, (entry.durationMinutes / CALENDAR_DURATION) * 100)}%`,
                       }}
-                      tabIndex={0}
-                      onClick={() => setSelectedEntry(entry)}
                       onDragStart={(event) =>
                         event.dataTransfer.setData("text/plain", entry.id)
                       }
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") setSelectedEntry(entry);
-                      }}
                     >
-                      <span>
+                      <button
+                        className="entry-card-open"
+                        type="button"
+                        onClick={() => setSelectedEntry(entry)}
+                      >
                         {entry.date < format(startOfToday(), "yyyy-MM-dd") &&
                         entry.status !== "done"
                           ? "● "
                           : ""}
                         {entry.title}
-                      </span>
+                      </button>
                       <span className="resize-controls">
                         <button
                           aria-label={`Уменьшить длительность: ${entry.title}`}
@@ -286,7 +284,7 @@ export function WeekPage({ settings }: Props) {
                           +
                         </button>
                       </span>
-                    </div>
+                    </article>
                   ))}
               </div>
             </article>
