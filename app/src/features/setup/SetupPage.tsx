@@ -116,6 +116,7 @@ export function SetupPage({ settings, onSave }: Props) {
                       aria-label={`${labels[day.weekday]}: начало ${kind}`}
                       disabled={kind === "work" && day.isDayOff}
                       type="time"
+                      step="900"
                       value={day[kind]?.start ?? ""}
                       onChange={(event) =>
                         setTime(day.weekday, kind, "start", event.target.value)
@@ -126,6 +127,7 @@ export function SetupPage({ settings, onSave }: Props) {
                       aria-label={`${labels[day.weekday]}: окончание ${kind}`}
                       disabled={kind === "work" && day.isDayOff}
                       type="time"
+                      step="900"
                       value={day[kind]?.end ?? ""}
                       onChange={(event) =>
                         setTime(day.weekday, kind, "end", event.target.value)
@@ -142,6 +144,7 @@ export function SetupPage({ settings, onSave }: Props) {
                       aria-label={`${labels[day.weekday]}: недоступно начало ${index + 1}`}
                       disabled={false}
                       type="time"
+                      step="900"
                       value={interval.start}
                       onChange={(event) =>
                         change(day.weekday, (current) => ({
@@ -160,6 +163,7 @@ export function SetupPage({ settings, onSave }: Props) {
                       aria-label={`${labels[day.weekday]}: недоступно окончание ${index + 1}`}
                       disabled={false}
                       type="time"
+                      step="900"
                       value={interval.end}
                       onChange={(event) =>
                         change(day.weekday, (current) => ({

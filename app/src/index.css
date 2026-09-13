@@ -24,6 +24,8 @@
 }
 
 :root[data-theme="dark"] {
+  --mint: #70d8b7;
+  --peach: #f5a278;
   --page: #251d20;
   --surface: #34282c;
   --surface-soft: #49373d;

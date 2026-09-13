@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { deleteEntry, listEntries, saveEntry } from "../../db/database";
 import type { PlannerEntry } from "../../types/planner";
 
@@ -6,6 +6,19 @@ export function useEntries() {
   const [entries, setEntries] = useState<PlannerEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const nextEntries = await listEntries();
+      setEntries(nextEntries);
+      setError(null);
+    } catch {
+      setError("Не удалось загрузить записи.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -40,5 +53,5 @@ export function useEntries() {
     setEntries((current) => current.filter((item) => item.id !== id));
   };
 
-  return { entries, isLoading, error, remove, save };
+  return { entries, isLoading, error, reload, remove, save };
 }

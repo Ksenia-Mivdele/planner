@@ -107,11 +107,7 @@
 .time-scale {
   height: 720px;
   position: relative;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--peach) 12%, transparent) 0 66%,
-    color-mix(in srgb, var(--mint) 14%, transparent) 66% 100%
-  );
+  background: color-mix(in srgb, var(--surface-soft) 70%, transparent);
 }
 .time-slot {
   border-top: 1px solid transparent;
@@ -134,6 +130,22 @@
 .calendar-zone.personal {
   background: color-mix(in srgb, var(--mint) 50%, transparent);
 }
+.calendar-zone.unavailable {
+  background: #625d5b;
+  border: 0;
+  border-radius: 7px;
+  box-shadow: none;
+  opacity: 1;
+  z-index: 1;
+}
+:root[data-theme="dark"] .calendar-zone {
+  opacity: 0.78;
+}
+:root[data-theme="dark"] .calendar-zone.unavailable {
+  background: #a49d9a;
+  box-shadow: 0 0 12px rgb(255 238 229 / 16%);
+  opacity: 1;
+}
 .entry-card {
   border: 0;
   border-radius: 7px;
@@ -141,6 +153,7 @@
   cursor: pointer;
   box-shadow: 0 6px 14px rgb(60 36 34 / 14%);
   left: 0.6rem;
+  min-height: 2.3rem;
   overflow: hidden;
   padding: 0.3rem;
   position: absolute;
@@ -158,13 +171,24 @@
   color: inherit;
   cursor: pointer;
   font: inherit;
+  font-weight: 700;
+  line-height: 1.4rem;
   min-height: 1.4rem;
   overflow: hidden;
   padding: 0;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: calc(100% - 2.8rem);
+  width: 100%;
+}
+.entry-type-icon {
+  display: inline-block;
+  font-weight: 800;
+  width: 1em;
+}
+.entry-card.conflict {
+  outline: 2px solid #b35d2f;
+  outline-offset: 1px;
 }
 .resize-controls {
   bottom: 0.15rem;
@@ -172,6 +196,12 @@
   gap: 0.15rem;
   position: absolute;
   right: 0.15rem;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.entry-card:hover .resize-controls,
+.entry-card:focus-within .resize-controls {
+  opacity: 1;
 }
 .resize-controls button {
   background: rgb(255 255 255 / 65%);
@@ -191,6 +221,8 @@
 }
 .entry-card.done {
   opacity: 0.45;
+}
+.entry-card.done .entry-card-open {
   text-decoration: line-through;
 }
 .day-off {

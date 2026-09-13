@@ -30,12 +30,22 @@
   cursor: pointer;
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: 2fr 1fr 1.5fr 1fr;
+  grid-template-columns: 2fr 1fr 1.5fr 0.7fr 1fr 1fr;
   padding: 0.85rem;
   text-align: left;
 }
 .entry-row.work {
   border-left-color: var(--peach);
+}
+.entry-row.done strong,
+.entry-row.done span {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+.entry-row .overdue {
+  color: #b42318;
+  font-weight: 700;
+  text-decoration: none;
 }
 .entry-row span,
 .empty-state {

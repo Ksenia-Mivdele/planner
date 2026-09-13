@@ -6,6 +6,7 @@ import type {
   UndoAction,
 } from "../types/planner";
 import { createDefaultSettings } from "../types/planner";
+import { createHabitOccurrences } from "../lib/habits";
 
 const DATABASE_NAME = "planner";
 const DATABASE_VERSION = 1;
@@ -104,6 +105,21 @@ export const deleteHabit = async (id: string): Promise<void> => {
   await database.delete("habits", id);
 };
 
+/** Creates only missing independent copies, never overwriting a changed occurrence. */
+export const ensureHabitOccurrences = async (
+  from = new Date(),
+): Promise<number> => {
+  const [habits, entries] = await Promise.all([listHabits(), listEntries()]);
+  const knownIds = new Set(entries.map((entry) => entry.id));
+  const missing = habits.flatMap((habit) =>
+    createHabitOccurrences(habit, from).filter(
+      (entry) => !knownIds.has(entry.id),
+    ),
+  );
+  await Promise.all(missing.map(saveEntry));
+  return missing.length;
+};
+
 export const listUndoActions = async (): Promise<UndoAction[]> => {
   const database = await getDatabase();
   return database.getAllFromIndex("undo", "by-created-at");
@@ -190,6 +206,8 @@ const isSettings = (value: unknown): value is AppSettings =>
 const isHabit = (value: unknown): value is HabitTemplate =>
   isRecord(value) &&
   isString(value.id) &&
+  (value.type === undefined ||
+    ["task", "meeting", "event"].includes(String(value.type))) &&
   isString(value.title) &&
   ["personal", "work"].includes(String(value.category)) &&
   isTime(value.startTime) &&

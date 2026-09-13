@@ -4,6 +4,8 @@ import type {
   EntryStatus,
   EntryType,
   PlannerEntry,
+  HabitTemplate,
+  Weekday,
 } from "../../types/planner";
 import { timeToMinutes } from "../../lib/schedule";
 import "./EntryDialog.css";
@@ -14,6 +16,7 @@ type Props = {
   defaultDuration: number;
   onClose: () => void;
   onSave: (entry: PlannerEntry) => Promise<boolean>;
+  onSaveHabit: (habit: HabitTemplate) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
 };
 const now = () => new Date().toISOString();
@@ -30,6 +33,7 @@ export function EntryDialog({
   defaultDuration,
   onClose,
   onSave,
+  onSaveHabit,
   onDelete,
 }: Props) {
   const [title, setTitle] = useState(entry?.title ?? "");
@@ -48,6 +52,13 @@ export function EntryDialog({
   const [status, setStatus] = useState<EntryStatus>(
     entry?.status ?? "in-progress",
   );
+  const [repeats, setRepeats] = useState(false);
+  const initialWeekday =
+    ((new Date(`${entry?.date ?? date}T12:00:00`).getDay() + 6) % 7) + 1;
+  const [weekdays, setWeekdays] = useState<Weekday[]>([
+    initialWeekday as Weekday,
+  ]);
+  const [repeatEndsOn, setRepeatEndsOn] = useState("");
   const [error, setError] = useState("");
   const save = async () => {
     if (!title.trim()) {
@@ -55,11 +66,15 @@ export function EntryDialog({
       return;
     }
     const durationMinutes = timeToMinutes(endTime) - timeToMinutes(startTime);
-    if (durationMinutes <= 0) {
-      setError("Время окончания должно быть позже времени начала.");
+    if (durationMinutes <= 0 || durationMinutes % 15 !== 0) {
+      setError("Окончание должно быть позже начала, с шагом 15 минут.");
       return;
     }
-    const saved = await onSave({
+    if (repeats && weekdays.length === 0) {
+      setError("Выберите хотя бы один день повторения.");
+      return;
+    }
+    const base = {
       id: entry?.id ?? crypto.randomUUID(),
       type,
       title: title.trim(),
@@ -71,7 +86,23 @@ export function EntryDialog({
       status,
       createdAt: entry?.createdAt ?? now(),
       updatedAt: now(),
-    });
+    };
+    const saved = repeats
+      ? await onSaveHabit({
+          id: base.id,
+          type,
+          title: base.title,
+          category,
+          startTime,
+          durationMinutes,
+          weekdays,
+          startsOn: entryDate,
+          ...(repeatEndsOn ? { endsOn: repeatEndsOn } : {}),
+          description: base.description,
+          createdAt: base.createdAt,
+          updatedAt: base.updatedAt,
+        })
+      : await onSave(base);
     if (saved) onClose();
   };
   return (
@@ -132,6 +163,7 @@ export function EntryDialog({
             Начало
             <input
               type="time"
+              step="900"
               value={startTime}
               onChange={(event) => setStartTime(event.target.value)}
             />
@@ -140,6 +172,7 @@ export function EntryDialog({
             Окончание
             <input
               type="time"
+              step="900"
               value={endTime}
               onChange={(event) => setEndTime(event.target.value)}
             />
@@ -155,6 +188,55 @@ export function EntryDialog({
             </select>
           </label>
         </div>
+        {!entry && (
+          <fieldset className="repeat-settings">
+            <label className="repeat-toggle">
+              <input
+                checked={repeats}
+                type="checkbox"
+                onChange={(event) => setRepeats(event.target.checked)}
+              />
+              Повторять еженедельно
+            </label>
+            {repeats && (
+              <>
+                <div className="weekday-picker" aria-label="Дни повторения">
+                  {(["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"] as const).map(
+                    (label, index) => {
+                      const weekday = (index + 1) as Weekday;
+                      return (
+                        <label key={weekday}>
+                          <input
+                            checked={weekdays.includes(weekday)}
+                            type="checkbox"
+                            onChange={() =>
+                              setWeekdays((current) =>
+                                current.includes(weekday)
+                                  ? current.filter((item) => item !== weekday)
+                                  : [...current, weekday],
+                              )
+                            }
+                          />
+                          {label}
+                        </label>
+                      );
+                    },
+                  )}
+                </div>
+                <label>
+                  Повторять до
+                  <input
+                    min={entryDate}
+                    type="date"
+                    value={repeatEndsOn}
+                    onChange={(event) => setRepeatEndsOn(event.target.value)}
+                  />
+                </label>
+                <small>Копии создаются максимум на четыре недели вперёд.</small>
+              </>
+            )}
+          </fieldset>
+        )}
         {error && (
           <p role="alert" className="form-error">
             {error}
@@ -162,17 +244,37 @@ export function EntryDialog({
         )}
         <footer>
           {entry && (
-            <button
-              className="delete-button"
-              type="button"
-              onClick={async () => {
-                if (window.confirm("Удалить запись?")) {
-                  if (await onDelete(entry.id)) onClose();
-                }
-              }}
-            >
-              Удалить
-            </button>
+            <>
+              {entry.status !== "done" &&
+                entry.date < new Date().toISOString().slice(0, 10) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (
+                        await onSave({
+                          ...entry,
+                          date: new Date().toISOString().slice(0, 10),
+                          updatedAt: now(),
+                        })
+                      )
+                        onClose();
+                    }}
+                  >
+                    Перенести на сегодня
+                  </button>
+                )}
+              <button
+                className="delete-button"
+                type="button"
+                onClick={async () => {
+                  if (window.confirm("Удалить запись?")) {
+                    if (await onDelete(entry.id)) onClose();
+                  }
+                }}
+              >
+                Удалить
+              </button>
+            </>
           )}
           <span />
           <button type="button" onClick={onClose}>

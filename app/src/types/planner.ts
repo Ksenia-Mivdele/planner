@@ -41,6 +41,8 @@ export type PlannerEntry = {
 
 export type HabitTemplate = {
   id: string;
+  /** Old backups did not contain this field and are treated as tasks. */
+  type?: EntryType;
   title: string;
   category: EntryCategory;
   startTime: string;

@@ -20,7 +20,7 @@ export const createHabitOccurrences = (
     if (habit.weekdays.includes(weekday as never) && !isBefore(date, start))
       occurrences.push({
         id: `${habit.id}:${format(date, "yyyy-MM-dd")}`,
-        type: "task",
+        type: habit.type ?? "task",
         title: habit.title,
         category: habit.category,
         date: format(date, "yyyy-MM-dd"),
