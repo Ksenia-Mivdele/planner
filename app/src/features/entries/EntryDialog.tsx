@@ -5,6 +5,7 @@ import type {
   EntryType,
   PlannerEntry,
 } from "../../types/planner";
+import { timeToMinutes } from "../../lib/schedule";
 import "./EntryDialog.css";
 
 type Props = {
@@ -16,6 +17,12 @@ type Props = {
   onDelete: (id: string) => Promise<void>;
 };
 const now = () => new Date().toISOString();
+const endTimeFor = (startTime: string, durationMinutes: number) => {
+  const total = timeToMinutes(startTime) + durationMinutes;
+  const hours = Math.floor((total % (24 * 60)) / 60);
+  const minutes = total % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+};
 
 export function EntryDialog({
   entry,
@@ -32,8 +39,11 @@ export function EntryDialog({
   );
   const [entryDate, setEntryDate] = useState(entry?.date ?? date);
   const [startTime, setStartTime] = useState(entry?.startTime ?? "09:00");
-  const [durationMinutes, setDurationMinutes] = useState(
-    entry?.durationMinutes ?? defaultDuration,
+  const [endTime, setEndTime] = useState(
+    endTimeFor(
+      entry?.startTime ?? "09:00",
+      entry?.durationMinutes ?? defaultDuration,
+    ),
   );
   const [status, setStatus] = useState<EntryStatus>(
     entry?.status ?? "in-progress",
@@ -42,6 +52,11 @@ export function EntryDialog({
   const save = async () => {
     if (!title.trim()) {
       setError("Введите название.");
+      return;
+    }
+    const durationMinutes = timeToMinutes(endTime) - timeToMinutes(startTime);
+    if (durationMinutes <= 0) {
+      setError("Время окончания должно быть позже времени начала.");
       return;
     }
     await onSave({
@@ -90,8 +105,8 @@ export function EntryDialog({
               onChange={(event) => setType(event.target.value as EntryType)}
             >
               <option value="task">Задача</option>
+              <option value="meeting">Встреча</option>
               <option value="event">Событие</option>
-              <option value="habit">Привычка</option>
             </select>
           </label>
           <label>
@@ -115,7 +130,7 @@ export function EntryDialog({
             />
           </label>
           <label>
-            Время
+            Начало
             <input
               type="time"
               value={startTime}
@@ -123,19 +138,12 @@ export function EntryDialog({
             />
           </label>
           <label>
-            Длительность
-            <select
-              value={durationMinutes}
-              onChange={(event) =>
-                setDurationMinutes(Number(event.target.value))
-              }
-            >
-              {[15, 30, 45, 60, 90, 120, 180].map((value) => (
-                <option key={value} value={value}>
-                  {value < 60 ? `${value} мин` : `${value / 60} ч`}
-                </option>
-              ))}
-            </select>
+            Окончание
+            <input
+              type="time"
+              value={endTime}
+              onChange={(event) => setEndTime(event.target.value)}
+            />
           </label>
           <label>
             Статус

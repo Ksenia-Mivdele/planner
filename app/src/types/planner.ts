@@ -1,4 +1,4 @@
-export const ENTRY_TYPES = ["task", "event", "habit"] as const;
+export const ENTRY_TYPES = ["task", "meeting", "event"] as const;
 export const ENTRY_STATUSES = ["in-progress", "done"] as const;
 export const ENTRY_CATEGORIES = ["personal", "work"] as const;
 

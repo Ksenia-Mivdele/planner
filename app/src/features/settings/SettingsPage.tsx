@@ -1,12 +1,29 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   clearAllData,
   exportPlannerData,
   importPlannerData,
 } from "../../db/database";
-export function SettingsPage({ onReset }: { onReset: () => void }) {
+import type { AppSettings } from "../../types/planner";
+import "./SettingsPage.css";
+
+type Props = {
+  settings: AppSettings;
+  onSettingsChange: (settings: AppSettings) => Promise<void>;
+  onReset: () => void;
+};
+
+export function SettingsPage({ settings, onSettingsChange, onReset }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const setTheme = async (theme: AppSettings["theme"]) => {
+    await onSettingsChange({ ...settings, theme });
+    setMessage(
+      theme === "dark" ? "Тёмная тема включена." : "Светлая тема включена.",
+    );
+  };
   const exportData = async () => {
     const data = await exportPlannerData();
     const url = URL.createObjectURL(
@@ -39,7 +56,48 @@ export function SettingsPage({ onReset }: { onReset: () => void }) {
     <main className="entries-page">
       <p className="eyebrow">Параметры</p>
       <h1>Настройки</h1>
-      <div className="entries-table">
+      <section className="settings-section">
+        <h2>Ваше расписание</h2>
+        <p>
+          Задайте время для дел и личного времени отдельно для каждого дня
+          недели.
+        </p>
+        <button
+          className="primary-button"
+          type="button"
+          onClick={() => navigate("/setup")}
+        >
+          Настроить неделю
+        </button>
+      </section>
+      <section className="settings-section">
+        <h2>Цветовая гамма</h2>
+        <p>Выберите оформление, которое комфортно для глаз.</p>
+        <div className="theme-options" role="group" aria-label="Выбор темы">
+          <button
+            className={
+              settings.theme === "light"
+                ? "theme-option active"
+                : "theme-option"
+            }
+            type="button"
+            onClick={() => void setTheme("light")}
+          >
+            Светлая
+          </button>
+          <button
+            className={
+              settings.theme === "dark" ? "theme-option active" : "theme-option"
+            }
+            type="button"
+            onClick={() => void setTheme("dark")}
+          >
+            Тёмная
+          </button>
+        </div>
+      </section>
+      <section className="settings-section entries-table">
+        <h2>Данные</h2>
         <button
           type="button"
           className="entry-row"
@@ -73,7 +131,7 @@ export function SettingsPage({ onReset }: { onReset: () => void }) {
         >
           Очистить все данные
         </button>
-      </div>
+      </section>
       {message && <p className="empty-state">{message}</p>}
     </main>
   );

@@ -14,6 +14,9 @@ function App() {
   useEffect(() => {
     void getSettings().then(setSettings);
   }, []);
+  useEffect(() => {
+    if (settings) document.documentElement.dataset.theme = settings.theme;
+  }, [settings]);
   if (!settings)
     return <main className="loading-page">Загружаем Планировщик...</main>;
   const needsSetup = !settings.hasCompletedInitialSetup;
@@ -36,13 +39,7 @@ function App() {
       <Routes>
         <Route
           path="/setup"
-          element={
-            needsSetup ? (
-              <SetupPage settings={settings} onSave={persistSettings} />
-            ) : (
-              <Navigate replace to="/week" />
-            )
-          }
+          element={<SetupPage settings={settings} onSave={persistSettings} />}
         />
         <Route
           path="/week"
@@ -64,6 +61,8 @@ function App() {
           path="/settings"
           element={
             <SettingsPage
+              settings={settings}
+              onSettingsChange={persistSettings}
               onReset={() => setSettings(createDefaultSettings())}
             />
           }

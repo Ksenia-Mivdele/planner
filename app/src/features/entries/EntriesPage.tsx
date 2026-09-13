@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { listEntries } from "../../db/database";
 import type { PlannerEntry } from "../../types/planner";
 import "./EntriesPage.css";
+
+const typeLabels = {
+  task: "Задача",
+  meeting: "Встреча",
+  event: "Событие",
+} as const;
 export function EntriesPage() {
   const [entries, setEntries] = useState<PlannerEntry[]>([]);
   const [query, setQuery] = useState("");
@@ -50,8 +56,8 @@ export function EntriesPage() {
         >
           <option value="all">Все типы</option>
           <option value="task">Задачи</option>
+          <option value="meeting">Встречи</option>
           <option value="event">События</option>
-          <option value="habit">Привычки</option>
         </select>
         <select
           aria-label="Статус"
@@ -73,7 +79,7 @@ export function EntriesPage() {
               onClick={() => navigate(`/week?date=${entry.date}`)}
             >
               <strong>{entry.title}</strong>
-              <span>{entry.type}</span>
+              <span>{typeLabels[entry.type]}</span>
               <span>
                 {entry.date} · {entry.startTime}
               </span>

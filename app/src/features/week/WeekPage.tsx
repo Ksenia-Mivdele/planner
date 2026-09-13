@@ -145,7 +145,7 @@ export function WeekPage({ settings }: Props) {
               type="checkbox"
               onChange={(event) => setShowCompleted(event.target.checked)}
             />{" "}
-            Показывать готовые
+            Показать завершённые
           </label>
           {undoEntry && (
             <button
