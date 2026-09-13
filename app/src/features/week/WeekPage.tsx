@@ -156,23 +156,6 @@ export function WeekPage({ settings }: Props) {
       return false;
     }
   };
-  const moveEntry = async (
-    entry: PlannerEntry,
-    date: string,
-    startTime: string,
-  ) => {
-    setUndoEntry(entry);
-    if (timeToMinutes(startTime) + entry.durationMinutes > 24 * 60) {
-      setNotice("Запись нельзя перенести за границу суток.");
-      return;
-    }
-    await persistEntry({
-      ...entry,
-      date,
-      startTime,
-      updatedAt: new Date().toISOString(),
-    });
-  };
   const resizeEntry = async (entry: PlannerEntry, delta: number) => {
     setUndoEntry(entry);
     const durationMinutes = Math.max(
@@ -268,7 +251,7 @@ export function WeekPage({ settings }: Props) {
                 setUndoEntry(null);
               }}
             >
-              Отменить перенос
+              Отменить изменение
             </button>
           )}
         </div>
@@ -305,23 +288,7 @@ export function WeekPage({ settings }: Props) {
                 style={{ height: `${Math.max(120, slots.length * 7.5)}px` }}
               >
                 {slots.map((minute) => (
-                  <div
-                    className="time-slot"
-                    key={minute}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={(event) => {
-                      const entry = entries.find(
-                        (item) =>
-                          item.id === event.dataTransfer.getData("text/plain"),
-                      );
-                      if (entry)
-                        void moveEntry(
-                          entry,
-                          format(date, "yyyy-MM-dd"),
-                          minutesToTime(minute),
-                        );
-                    }}
-                  />
+                  <div className="time-slot" key={minute} />
                 ))}
                 <Zone
                   interval={availability?.work ?? null}
@@ -352,29 +319,34 @@ export function WeekPage({ settings }: Props) {
                       aria-label={`${entry.title}, ${entry.durationMinutes} минут`}
                       className={`entry-card ${entry.category} ${entry.status === "done" ? "done" : ""} ${conflictIds.has(entry.id) ? "conflict" : ""}`}
                       key={entry.id}
-                      draggable
                       style={{
                         top: `${(slots.indexOf(timeToMinutes(entry.startTime)) / slots.length) * 100}%`,
                         height: `${Math.max(3, (entry.durationMinutes / 15 / slots.length) * 100)}%`,
                       }}
-                      onDragStart={(event) =>
-                        event.dataTransfer.setData("text/plain", entry.id)
-                      }
                     >
                       <button
                         className="entry-card-open"
                         type="button"
                         onClick={() => setSelectedEntry(entry)}
                       >
-                        <span className="entry-type-icon" aria-hidden="true">
-                          {typeIcons[entry.type]}
-                        </span>{" "}
-                        {conflictIds.has(entry.id) ? "⚠ " : ""}
-                        {entry.date < format(startOfToday(), "yyyy-MM-dd") &&
-                        entry.status !== "done"
-                          ? "● "
-                          : ""}
-                        {entry.title}
+                        <span className="entry-card-title">
+                          <span className="entry-type-icon" aria-hidden="true">
+                            {typeIcons[entry.type]}
+                          </span>{" "}
+                          {conflictIds.has(entry.id) ? "⚠ " : ""}
+                          {entry.date < format(startOfToday(), "yyyy-MM-dd") &&
+                          entry.status !== "done"
+                            ? "● "
+                            : ""}
+                          {entry.title}
+                        </span>
+                        <span className="entry-card-time">
+                          {entry.startTime} -{" "}
+                          {minutesToTime(
+                            timeToMinutes(entry.startTime) +
+                              entry.durationMinutes,
+                          )}
+                        </span>
                       </button>
                       <span className="resize-controls">
                         <button
