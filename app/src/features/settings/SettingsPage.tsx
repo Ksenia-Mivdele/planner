@@ -11,10 +11,16 @@ import "./SettingsPage.css";
 type Props = {
   settings: AppSettings;
   onSettingsChange: (settings: AppSettings) => Promise<void>;
+  onDataImported: (settings: AppSettings) => void;
   onReset: () => void;
 };
 
-export function SettingsPage({ settings, onSettingsChange, onReset }: Props) {
+export function SettingsPage({
+  settings,
+  onSettingsChange,
+  onDataImported,
+  onReset,
+}: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -42,8 +48,10 @@ export function SettingsPage({ settings, onSettingsChange, onReset }: Props) {
     try {
       const data = JSON.parse(await file.text());
       if (!window.confirm("Импорт заменит текущие данные. Продолжить?")) return;
-      await importPlannerData(data);
+      const imported = await importPlannerData(data);
+      onDataImported(imported.settings);
       setMessage("Данные импортированы.");
+      navigate("/week", { replace: true });
     } catch (error) {
       setMessage(
         error instanceof Error

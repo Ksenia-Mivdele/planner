@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { listEntries } from "../../db/database";
-import type { PlannerEntry } from "../../types/planner";
+import { useEntries } from "./useEntries";
 import "./EntriesPage.css";
 
 const typeLabels = {
@@ -10,15 +9,12 @@ const typeLabels = {
   event: "Событие",
 } as const;
 export function EntriesPage() {
-  const [entries, setEntries] = useState<PlannerEntry[]>([]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
   const navigate = useNavigate();
-  useEffect(() => {
-    void listEntries().then(setEntries);
-  }, []);
+  const { entries, error, isLoading } = useEntries();
   const filtered = useMemo(
     () =>
       entries.filter(
@@ -69,7 +65,14 @@ export function EntriesPage() {
           <option value="done">Готово</option>
         </select>
       </div>
-      {filtered.length ? (
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      {isLoading ? (
+        <p className="empty-state">Загружаем записи...</p>
+      ) : filtered.length ? (
         <div className="entries-table">
           {filtered.map((entry) => (
             <button

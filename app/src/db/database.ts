@@ -142,23 +142,114 @@ export type PlannerExport = {
   entries: PlannerEntry[];
   habits: HabitTemplate[];
 };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+const isString = (value: unknown): value is string => typeof value === "string";
+const isTime = (value: unknown): value is string =>
+  isString(value) && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+const isInterval = (value: unknown): value is { start: string; end: string } =>
+  isRecord(value) &&
+  isTime(value.start) &&
+  isTime(value.end) &&
+  value.end > value.start;
+const isEntry = (value: unknown): value is PlannerEntry =>
+  isRecord(value) &&
+  isString(value.id) &&
+  ["task", "meeting", "event"].includes(String(value.type)) &&
+  isString(value.title) &&
+  ["personal", "work"].includes(String(value.category)) &&
+  /^\d{4}-\d{2}-\d{2}$/.test(String(value.date)) &&
+  isTime(value.startTime) &&
+  Number.isInteger(value.durationMinutes) &&
+  Number(value.durationMinutes) > 0 &&
+  Number(value.durationMinutes) <= 24 * 60 &&
+  isString(value.description) &&
+  ["in-progress", "done"].includes(String(value.status)) &&
+  isString(value.createdAt) &&
+  isString(value.updatedAt);
+const isDayAvailability = (value: unknown): boolean =>
+  isRecord(value) &&
+  Number.isInteger(value.weekday) &&
+  Number(value.weekday) >= 1 &&
+  Number(value.weekday) <= 7 &&
+  typeof value.isDayOff === "boolean" &&
+  (value.work === null || isInterval(value.work)) &&
+  (value.personal === null || isInterval(value.personal)) &&
+  Array.isArray(value.unavailable) &&
+  value.unavailable.every(isInterval);
+const isSettings = (value: unknown): value is AppSettings =>
+  isRecord(value) &&
+  (value.theme === "light" || value.theme === "dark") &&
+  Number.isInteger(value.defaultDurationMinutes) &&
+  Number(value.defaultDurationMinutes) > 0 &&
+  Array.isArray(value.availability) &&
+  value.availability.length === 7 &&
+  value.availability.every(isDayAvailability) &&
+  typeof value.hasCompletedInitialSetup === "boolean";
+const isHabit = (value: unknown): value is HabitTemplate =>
+  isRecord(value) &&
+  isString(value.id) &&
+  isString(value.title) &&
+  ["personal", "work"].includes(String(value.category)) &&
+  isTime(value.startTime) &&
+  Number.isInteger(value.durationMinutes) &&
+  Number(value.durationMinutes) > 0 &&
+  Array.isArray(value.weekdays) &&
+  value.weekdays.every(
+    (weekday) => Number.isInteger(weekday) && weekday >= 1 && weekday <= 7,
+  ) &&
+  /^\d{4}-\d{2}-\d{2}$/.test(String(value.startsOn)) &&
+  (value.endsOn === undefined ||
+    /^\d{4}-\d{2}-\d{2}$/.test(String(value.endsOn))) &&
+  isString(value.description) &&
+  isString(value.createdAt) &&
+  isString(value.updatedAt);
+
+const parsePlannerExport = (data: unknown): PlannerExport => {
+  if (!isRecord(data) || data.schemaVersion !== 1 || !isSettings(data.settings))
+    throw new Error("Файл не является резервной копией Планировщика.");
+  if (!Array.isArray(data.entries) || !data.entries.every(isEntry))
+    throw new Error("В резервной копии есть некорректные записи.");
+  if (!Array.isArray(data.habits) || !data.habits.every(isHabit))
+    throw new Error("В резервной копии есть некорректные повторения.");
+  return {
+    schemaVersion: 1,
+    settings: data.settings,
+    entries: data.entries,
+    habits: data.habits,
+  };
+};
 export const exportPlannerData = async (): Promise<PlannerExport> => ({
   schemaVersion: 1,
   settings: await getSettings(),
   entries: await listEntries(),
   habits: await listHabits(),
 });
-export const importPlannerData = async (data: unknown): Promise<void> => {
-  const candidate = data as Partial<PlannerExport>;
-  if (
-    candidate.schemaVersion !== 1 ||
-    !candidate.settings ||
-    !Array.isArray(candidate.entries) ||
-    !Array.isArray(candidate.habits)
-  )
-    throw new Error("Файл не является резервной копией Планировщика.");
-  await clearAllData();
-  await saveSettings(candidate.settings);
-  await Promise.all(candidate.entries.map(saveEntry));
-  await Promise.all(candidate.habits.map(saveHabit));
+export const importPlannerData = async (
+  data: unknown,
+): Promise<PlannerExport> => {
+  const candidate = parsePlannerExport(data);
+  const database = await getDatabase();
+  const transaction = database.transaction(
+    ["settings", "entries", "habits", "undo"],
+    "readwrite",
+  );
+  const settingsStore = transaction.objectStore("settings");
+  const entriesStore = transaction.objectStore("entries");
+  const habitsStore = transaction.objectStore("habits");
+  const undoStore = transaction.objectStore("undo");
+  await Promise.all([
+    settingsStore.clear(),
+    entriesStore.clear(),
+    habitsStore.clear(),
+    undoStore.clear(),
+  ]);
+  await Promise.all([
+    settingsStore.put({ id: SETTINGS_KEY, value: candidate.settings }),
+    ...candidate.entries.map((entry) => entriesStore.put(entry)),
+    ...candidate.habits.map((habit) => habitsStore.put(habit)),
+  ]);
+  await transaction.done;
+  return candidate;
 };

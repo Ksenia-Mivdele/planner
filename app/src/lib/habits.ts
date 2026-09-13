@@ -28,11 +28,6 @@ export const createHabitOccurrences = (
         durationMinutes: habit.durationMinutes,
         description: habit.description,
         status: "in-progress",
-        subtasks: habit.subtasks.map((subtask) => ({
-          id: crypto.randomUUID(),
-          title: subtask.title,
-          isDone: false,
-        })),
         originHabitId: habit.id,
         createdAt,
         updatedAt: createdAt,

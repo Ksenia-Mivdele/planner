@@ -63,6 +63,7 @@ function App() {
             <SettingsPage
               settings={settings}
               onSettingsChange={persistSettings}
+              onDataImported={setSettings}
               onReset={() => setSettings(createDefaultSettings())}
             />
           }

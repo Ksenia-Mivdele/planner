@@ -65,17 +65,22 @@ export function SetupPage({ settings, onSave }: Props) {
     }
     setSaving(true);
     setError(null);
-    await onSave({
-      ...settings,
-      availability: days,
-      hasCompletedInitialSetup: true,
-    });
-    navigate("/week");
+    try {
+      await onSave({
+        ...settings,
+        availability: days,
+        hasCompletedInitialSetup: true,
+      });
+      navigate("/week");
+    } catch {
+      setError("Не удалось сохранить расписание. Повторите попытку.");
+      setSaving(false);
+    }
   };
   return (
     <main className="setup-page">
       <section className="setup-intro">
-        <p className="eyebrow">Первый запуск</p>
+        <p className="eyebrow">Настройки недели</p>
         <h1>Настроим вашу неделю</h1>
         <p>
           Укажите время для работы, личных дел и периодов, в которые вы
@@ -100,7 +105,7 @@ export function SetupPage({ settings, onSave }: Props) {
                       }))
                     }
                   />{" "}
-                  Выходной
+                  Выходной от работы
                 </label>
               </div>
               <div className="time-groups">
@@ -109,7 +114,7 @@ export function SetupPage({ settings, onSave }: Props) {
                     <span>{kind === "work" ? "Работа" : "Личное"}</span>
                     <input
                       aria-label={`${labels[day.weekday]}: начало ${kind}`}
-                      disabled={day.isDayOff}
+                      disabled={kind === "work" && day.isDayOff}
                       type="time"
                       value={day[kind]?.start ?? ""}
                       onChange={(event) =>
@@ -119,7 +124,7 @@ export function SetupPage({ settings, onSave }: Props) {
                     <span>-</span>
                     <input
                       aria-label={`${labels[day.weekday]}: окончание ${kind}`}
-                      disabled={day.isDayOff}
+                      disabled={kind === "work" && day.isDayOff}
                       type="time"
                       value={day[kind]?.end ?? ""}
                       onChange={(event) =>
@@ -135,7 +140,7 @@ export function SetupPage({ settings, onSave }: Props) {
                   <div className="time-group" key={index}>
                     <input
                       aria-label={`${labels[day.weekday]}: недоступно начало ${index + 1}`}
-                      disabled={day.isDayOff}
+                      disabled={false}
                       type="time"
                       value={interval.start}
                       onChange={(event) =>
@@ -153,7 +158,7 @@ export function SetupPage({ settings, onSave }: Props) {
                     <span>-</span>
                     <input
                       aria-label={`${labels[day.weekday]}: недоступно окончание ${index + 1}`}
-                      disabled={day.isDayOff}
+                      disabled={false}
                       type="time"
                       value={interval.end}
                       onChange={(event) =>
@@ -170,7 +175,7 @@ export function SetupPage({ settings, onSave }: Props) {
                     />
                     <button
                       type="button"
-                      disabled={day.isDayOff}
+                      disabled={false}
                       onClick={() =>
                         change(day.weekday, (current) => ({
                           ...current,
@@ -186,7 +191,6 @@ export function SetupPage({ settings, onSave }: Props) {
                 ))}
                 <button
                   type="button"
-                  disabled={day.isDayOff}
                   onClick={() =>
                     change(day.weekday, (current) => ({
                       ...current,

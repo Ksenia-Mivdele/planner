@@ -24,8 +24,6 @@ export type AppSettings = {
   hasCompletedInitialSetup: boolean;
 };
 
-export type Subtask = { id: string; title: string; isDone: boolean };
-
 export type PlannerEntry = {
   id: string;
   type: EntryType;
@@ -36,7 +34,6 @@ export type PlannerEntry = {
   durationMinutes: number;
   description: string;
   status: EntryStatus;
-  subtasks: Subtask[];
   originHabitId?: string;
   createdAt: string;
   updatedAt: string;
@@ -52,7 +49,6 @@ export type HabitTemplate = {
   startsOn: string;
   endsOn?: string;
   description: string;
-  subtasks: Omit<Subtask, "id" | "isDone">[];
   createdAt: string;
   updatedAt: string;
 };

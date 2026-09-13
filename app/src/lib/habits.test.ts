@@ -12,7 +12,6 @@ describe("генерация привычек", () => {
         weekdays: [1],
         startsOn: "2026-09-01",
         description: "",
-        subtasks: [],
         createdAt: "",
         updatedAt: "",
       },

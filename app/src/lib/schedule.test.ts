@@ -18,7 +18,6 @@ const createEntry = (overrides: Partial<PlannerEntry>): PlannerEntry => ({
   durationMinutes: 60,
   description: "",
   status: "in-progress",
-  subtasks: [],
   createdAt: "2026-09-12T10:00:00.000Z",
   updatedAt: "2026-09-12T10:00:00.000Z",
   ...overrides,
@@ -61,14 +60,14 @@ describe("календарные расчёты", () => {
     ).toBe(540);
   });
 
-  it("считает выходной полностью недоступным", () => {
+  it("считает личное время в выходной, но исключает рабочее", () => {
     expect(
       calculateFreeMinutes({
         date: new Date("2026-09-13T12:00:00"),
         availability: createDefaultAvailability(),
         entries: [],
       }),
-    ).toBe(0);
+    ).toBe(180);
   });
 
   it("находит конфликтующие записи одного дня", () => {

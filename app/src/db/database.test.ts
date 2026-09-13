@@ -5,6 +5,7 @@ import {
   deletePlannerDatabase,
   getEntry,
   getSettings,
+  importPlannerData,
   listEntriesForDate,
   saveEntry,
   saveSettings,
@@ -20,7 +21,6 @@ const entry: PlannerEntry = {
   durationMinutes: 30,
   description: "",
   status: "in-progress",
-  subtasks: [],
   createdAt: "2026-09-12T10:00:00.000Z",
   updatedAt: "2026-09-12T10:00:00.000Z",
 };
@@ -64,5 +64,31 @@ describe("локальная база Планировщика", () => {
       theme: "dark",
       hasCompletedInitialSetup: true,
     });
+  });
+
+  it("не удаляет данные при некорректном импорте", async () => {
+    await saveEntry(entry);
+    await expect(
+      importPlannerData({
+        schemaVersion: 1,
+        settings: {},
+        entries: [],
+        habits: [],
+      }),
+    ).rejects.toThrow("резервной копией");
+    await expect(getEntry(entry.id)).resolves.toEqual(entry);
+  });
+
+  it("импортирует проверенную резервную копию", async () => {
+    const settings = await getSettings();
+    const backup = {
+      schemaVersion: 1 as const,
+      settings: { ...settings, theme: "dark" as const },
+      entries: [entry],
+      habits: [],
+    };
+    await expect(importPlannerData(backup)).resolves.toEqual(backup);
+    await expect(getSettings()).resolves.toMatchObject({ theme: "dark" });
+    await expect(getEntry(entry.id)).resolves.toEqual(entry);
   });
 });

@@ -7,9 +7,9 @@ import {
   subWeeks,
 } from "date-fns";
 import { ru } from "date-fns/locale";
-import { useEffect, useMemo, useState } from "react";
-import { deleteEntry, listEntries, saveEntry } from "../../db/database";
+import { useMemo, useState } from "react";
 import { EntryDialog } from "../entries/EntryDialog";
+import { useEntries } from "../entries/useEntries";
 import {
   calculateFreeMinutes,
   getDayAvailability,
@@ -27,10 +27,10 @@ import "./WeekPage.css";
 
 type Props = { settings: AppSettings };
 const labels = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-const CALENDAR_START = 8 * 60;
-const CALENDAR_DURATION = 15 * 60;
+const CALENDAR_START = 0;
+const CALENDAR_DURATION = 24 * 60;
 const slots = Array.from(
-  { length: 60 },
+  { length: 96 },
   (_, index) => CALENDAR_START + index * 15,
 );
 const formatFree = (minutes: number) =>
@@ -55,25 +55,34 @@ const Zone = ({
 
 export function WeekPage({ settings }: Props) {
   const [currentDate, setCurrentDate] = useState(startOfToday());
-  const [showCompleted, setShowCompleted] = useState(true);
-  const [entries, setEntries] = useState<PlannerEntry[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<
     PlannerEntry | null | undefined
   >(undefined);
   const [undoEntry, setUndoEntry] = useState<PlannerEntry | null>(null);
-  useEffect(() => {
-    void listEntries().then(setEntries);
-  }, []);
-  const persistEntry = async (entry: PlannerEntry) => {
-    await saveEntry(entry);
-    setEntries((current) => [
-      ...current.filter((item) => item.id !== entry.id),
-      entry,
-    ]);
+  const [notice, setNotice] = useState<string | null>(null);
+  const { entries, error: entriesError, remove, save } = useEntries();
+  const persistEntry = async (entry: PlannerEntry): Promise<boolean> => {
+    try {
+      await save(entry);
+      setNotice(null);
+      return true;
+    } catch {
+      setNotice(
+        "Не удалось сохранить запись. Проверьте данные и повторите попытку.",
+      );
+      return false;
+    }
   };
-  const removeEntry = async (id: string) => {
-    await deleteEntry(id);
-    setEntries((current) => current.filter((item) => item.id !== id));
+  const removeEntry = async (id: string): Promise<boolean> => {
+    try {
+      await remove(id);
+      setNotice(null);
+      return true;
+    } catch {
+      setNotice("Не удалось удалить запись. Повторите попытку.");
+      return false;
+    }
   };
   const moveEntry = async (
     entry: PlannerEntry,
@@ -81,6 +90,10 @@ export function WeekPage({ settings }: Props) {
     startTime: string,
   ) => {
     setUndoEntry(entry);
+    if (timeToMinutes(startTime) + entry.durationMinutes > 24 * 60) {
+      setNotice("Запись нельзя перенести за границу суток.");
+      return;
+    }
     await persistEntry({
       ...entry,
       date,
@@ -90,9 +103,20 @@ export function WeekPage({ settings }: Props) {
   };
   const resizeEntry = async (entry: PlannerEntry, delta: number) => {
     setUndoEntry(entry);
+    const durationMinutes = Math.max(
+      15,
+      Math.min(
+        24 * 60 - timeToMinutes(entry.startTime),
+        entry.durationMinutes + delta,
+      ),
+    );
+    if (durationMinutes === entry.durationMinutes) {
+      setNotice("Длительность записи не может выйти за границы суток.");
+      return;
+    }
     await persistEntry({
       ...entry,
-      durationMinutes: Math.max(15, entry.durationMinutes + delta),
+      durationMinutes,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -202,17 +226,11 @@ export function WeekPage({ settings }: Props) {
                     }}
                   />
                 ))}
-                {availability?.isDayOff ? (
-                  <div className="day-off">Выходной</div>
-                ) : (
-                  <>
-                    <Zone interval={availability?.work ?? null} kind="work" />
-                    <Zone
-                      interval={availability?.personal ?? null}
-                      kind="personal"
-                    />
-                  </>
-                )}
+                <Zone interval={availability?.work ?? null} kind="work" />
+                <Zone
+                  interval={availability?.personal ?? null}
+                  kind="personal"
+                />
                 {entries
                   .filter(
                     (entry) =>
@@ -275,6 +293,11 @@ export function WeekPage({ settings }: Props) {
           );
         })}
       </section>
+      {(notice || entriesError) && (
+        <p className="form-error" role="alert">
+          {notice ?? entriesError}
+        </p>
+      )}
       <button
         className="floating-add"
         type="button"

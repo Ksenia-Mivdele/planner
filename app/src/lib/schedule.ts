@@ -167,9 +167,12 @@ export const calculateFreeMinutes = ({
   entries: PlannerEntry[];
 }): number => {
   const dayAvailability = getDayAvailability(date, availability);
-  if (!dayAvailability || dayAvailability.isDayOff) return 0;
+  if (!dayAvailability) return 0;
 
-  const available = [dayAvailability.work, dayAvailability.personal]
+  const available = [
+    dayAvailability.isDayOff ? null : dayAvailability.work,
+    dayAvailability.personal,
+  ]
     .filter((interval): interval is TimeInterval => interval !== null)
     .map(toMinuteInterval);
   const unavailable = dayAvailability.unavailable.map(toMinuteInterval);

@@ -13,8 +13,8 @@ type Props = {
   date: string;
   defaultDuration: number;
   onClose: () => void;
-  onSave: (entry: PlannerEntry) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onSave: (entry: PlannerEntry) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
 };
 const now = () => new Date().toISOString();
 const endTimeFor = (startTime: string, durationMinutes: number) => {
@@ -59,7 +59,7 @@ export function EntryDialog({
       setError("Время окончания должно быть позже времени начала.");
       return;
     }
-    await onSave({
+    const saved = await onSave({
       id: entry?.id ?? crypto.randomUUID(),
       type,
       title: title.trim(),
@@ -69,11 +69,10 @@ export function EntryDialog({
       durationMinutes,
       description: entry?.description ?? "",
       status,
-      subtasks: entry?.subtasks ?? [],
       createdAt: entry?.createdAt ?? now(),
       updatedAt: now(),
     });
-    onClose();
+    if (saved) onClose();
   };
   return (
     <div className="dialog-backdrop" role="presentation">
@@ -168,8 +167,7 @@ export function EntryDialog({
               type="button"
               onClick={async () => {
                 if (window.confirm("Удалить запись?")) {
-                  await onDelete(entry.id);
-                  onClose();
+                  if (await onDelete(entry.id)) onClose();
                 }
               }}
             >
