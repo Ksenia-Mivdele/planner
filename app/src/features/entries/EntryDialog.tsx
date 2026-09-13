@@ -4,7 +4,6 @@ import type {
   EntryStatus,
   EntryType,
   PlannerEntry,
-  Subtask,
 } from "../../types/planner";
 import "./EntryDialog.css";
 
@@ -40,8 +39,6 @@ export function EntryDialog({
     entry?.status ?? "in-progress",
   );
   const [error, setError] = useState("");
-  const [subtasks, setSubtasks] = useState<Subtask[]>(entry?.subtasks ?? []);
-  const [subtaskTitle, setSubtaskTitle] = useState("");
   const save = async () => {
     if (!title.trim()) {
       setError("Введите название.");
@@ -57,10 +54,7 @@ export function EntryDialog({
       durationMinutes,
       description: entry?.description ?? "",
       status,
-      subtasks:
-        status === "done"
-          ? subtasks.map((subtask) => ({ ...subtask, isDone: true }))
-          : subtasks,
+      subtasks: entry?.subtasks ?? [],
       createdAt: entry?.createdAt ?? now(),
       updatedAt: now(),
     });
@@ -154,62 +148,6 @@ export function EntryDialog({
             </select>
           </label>
         </div>
-        <section className="subtasks-section">
-          <h3>Подзадачи</h3>
-          {subtasks.map((subtask) => (
-            <label className="subtask-row" key={subtask.id}>
-              <input
-                checked={subtask.isDone}
-                type="checkbox"
-                onChange={(event) =>
-                  setSubtasks((current) =>
-                    current.map((item) =>
-                      item.id === subtask.id
-                        ? { ...item, isDone: event.target.checked }
-                        : item,
-                    ),
-                  )
-                }
-              />
-              {subtask.title}
-              <button
-                type="button"
-                onClick={() =>
-                  setSubtasks((current) =>
-                    current.filter((item) => item.id !== subtask.id),
-                  )
-                }
-              >
-                ×
-              </button>
-            </label>
-          ))}
-          <div className="subtask-add">
-            <input
-              value={subtaskTitle}
-              placeholder="Новая подзадача"
-              onChange={(event) => setSubtaskTitle(event.target.value)}
-            />
-            <button
-              type="button"
-              onClick={() => {
-                if (subtaskTitle.trim()) {
-                  setSubtasks((current) => [
-                    ...current,
-                    {
-                      id: crypto.randomUUID(),
-                      title: subtaskTitle.trim(),
-                      isDone: false,
-                    },
-                  ]);
-                  setSubtaskTitle("");
-                }
-              }}
-            >
-              Добавить
-            </button>
-          </div>
-        </section>
         {error && (
           <p role="alert" className="form-error">
             {error}
